@@ -1,25 +1,16 @@
----
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
----
-
-
-
 # Practical Machine Learning Project: Prediction Assignment Writeup
 _Chandani Patel_
 
 _06-April-2020_
 
-### Overview 
+### Overview
 This document is created for final project submission for Courseara course `Practical Machine Learning` which is part of Machine learning specialization course.
 There is data of human activity is provided by courseara which contains accelerometers data on the belt, forearm, arm, and dumbell of 6 participants like the acticity people regularly do, how much of a particular activity they do, how well they do it. The Project is to predict the manner in which they did exercise.
 
 ### Tools & Languages
 * R
 * R Studio
-* [Caret package](http://topepo.github.io/caret/index.html) 
+* [Caret package](http://topepo.github.io/caret/index.html)
 
 ## Problem Statement
 Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
@@ -117,14 +108,14 @@ dim(validData)
 
 # Splitting of Data
 
-There will be 2 datasets, 
+There will be 2 datasets,
 
 * training data: this will be 70% of provided training data and used to train the model
 * test data: this will be 30% of provided training data and used to test data and quiz results
 
 
 ```r
-set.seed(1234) 
+set.seed(1234)
 inTrain <- createDataPartition(trainData$classe, p = 0.7, list = FALSE)
 trainData <- trainData[inTrain, ]
 testData <- trainData[-inTrain, ]
@@ -163,11 +154,11 @@ Let's put the corelation plot uses the following parameters.
 
 ```r
 cor_mat <- cor(trainData[, -53])
-corrplot(cor_mat, order = "FPC", method = "color", type = "upper", 
+corrplot(cor_mat, order = "FPC", method = "color", type = "upper",
          tl.cex = 0.8, tl.col = rgb(0, 0, 0))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-5-1.pdf)<!-- --> 
+![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-5-1.jpg)<!-- -->
 
 In the above graph the correlated predictors (variables) are those with a dark color intersection.
 
@@ -179,7 +170,7 @@ names(trainData)[highlyCorrelated]
 ```
 
 ```
-##  [1] "accel_belt_z"      "roll_belt"         "accel_belt_y"      "total_accel_belt"  "accel_dumbbell_z" 
+##  [1] "accel_belt_z"      "roll_belt"         "accel_belt_y"      "total_accel_belt"  "accel_dumbbell_z"
 ##  [6] "accel_belt_x"      "pitch_belt"        "magnet_dumbbell_x" "accel_dumbbell_y"  "magnet_dumbbell_y"
 ## [11] "accel_dumbbell_x"  "accel_arm_x"       "accel_arm_z"       "magnet_arm_y"      "magnet_belt_z"    
 ## [16] "accel_forearm_y"   "gyros_forearm_y"   "gyros_dumbbell_x"  "gyros_dumbbell_z"  "gyros_arm_x"
@@ -210,7 +201,7 @@ fancyRpartPlot(decisionTreeModel)
 ## Warning: labs do not fit even at cex 0.15, there may be some overplotting
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-7-1.pdf)<!-- --> 
+![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-7-1.jpg)<!-- -->
 
 ### Prediction
 validate the "decisionTreeModel" on testData to find accuracy
@@ -223,7 +214,7 @@ cmtree
 
 ```
 ## Confusion Matrix and Statistics
-## 
+##
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1067  105    9   24    9
@@ -231,7 +222,7 @@ cmtree
 ##          C   28   90  611  116   86
 ##          D   11   49   41  423   41
 ##          E   19   41   18   46  548
-## 
+##
 ## Overall Statistics
 ##                                          
 ##                Accuracy : 0.7642         
@@ -242,9 +233,9 @@ cmtree
 ##                   Kappa : 0.7015         
 ##                                          
 ##  Mcnemar's Test P-Value : < 2.2e-16      
-## 
+##
 ## Statistics by Class:
-## 
+##
 ##                      Class: A Class: B Class: C Class: D Class: E
 ## Sensitivity            0.9159   0.6379   0.8279   0.6295   0.7201
 ## Specificity            0.9503   0.9284   0.9055   0.9589   0.9631
@@ -261,11 +252,11 @@ Accuracy Rate: *0.7642* which is low beacuse of this out-of-sample-error is abou
 ### Plot matrix Results
 
 ```r
-plot(cmtree$table, col = cmtree$byClass, 
+plot(cmtree$table, col = cmtree$byClass,
      main = paste("Decision Tree - Accuracy =", round(cmtree$overall['Accuracy'], 4)))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-9-1.pdf)<!-- --> 
+![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-9-1.jpg)<!-- -->
 
 ## Random Forest
 
@@ -281,13 +272,13 @@ randomForestModel$finalModel
 ```
 
 ```
-## 
+##
 ## Call:
-##  randomForest(x = x, y = y, mtry = param$mtry) 
+##  randomForest(x = x, y = y, mtry = param$mtry)
 ##                Type of random forest: classification
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 27
-## 
+##
 ##         OOB estimate of  error rate: 0.7%
 ## Confusion matrix:
 ##      A    B    C    D    E class.error
@@ -309,7 +300,7 @@ cmRandomForestModel
 
 ```
 ## Confusion Matrix and Statistics
-## 
+##
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1165    0    0    0    0
@@ -317,7 +308,7 @@ cmRandomForestModel
 ##          C    0    0  738    0    0
 ##          D    0    0    0  672    0
 ##          E    0    0    0    0  761
-## 
+##
 ## Overall Statistics
 ##                                      
 ##                Accuracy : 1          
@@ -328,9 +319,9 @@ cmRandomForestModel
 ##                   Kappa : 1          
 ##                                      
 ##  Mcnemar's Test P-Value : NA         
-## 
+##
 ## Statistics by Class:
-## 
+##
 ##                      Class: A Class: B Class: C Class: D Class: E
 ## Sensitivity            1.0000   1.0000    1.000    1.000   1.0000
 ## Specificity            1.0000   1.0000    1.000    1.000   1.0000
@@ -349,7 +340,7 @@ Accuracy Rate: *1* which is very high so out-of-sample-error is *0*. This might 
 plot(cmRandomForestModel$table, col = cmRandomForestModel$byClass, main = paste("Random Forest Confusion Matrix: Accuracy =", round(cmRandomForestModel$overall['Accuracy'], 4)))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-12-1.pdf)<!-- --> 
+![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-12-1.jpg)<!-- -->
 
 ## Generalized Boosted Model
 
@@ -375,17 +366,17 @@ print(modelGBM)
 ```
 
 ```
-## Stochastic Gradient Boosting 
-## 
+## Stochastic Gradient Boosting
+##
 ## 13737 samples
 ##    52 predictor
-##     5 classes: 'A', 'B', 'C', 'D', 'E' 
-## 
+##     5 classes: 'A', 'B', 'C', 'D', 'E'
+##
 ## No pre-processing
-## Resampling: Cross-Validated (5 fold, repeated 1 times) 
-## Summary of sample sizes: 10990, 10990, 10989, 10991, 10988 
+## Resampling: Cross-Validated (5 fold, repeated 1 times)
+## Summary of sample sizes: 10990, 10990, 10989, 10991, 10988
 ## Resampling results across tuning parameters:
-## 
+##
 ##   interaction.depth  n.trees  Accuracy   Kappa    
 ##   1                   50      0.7521285  0.6858434
 ##   1                  100      0.8227397  0.7756753
@@ -396,7 +387,7 @@ print(modelGBM)
 ##   3                   50      0.8969931  0.8695557
 ##   3                  100      0.9398712  0.9238994
 ##   3                  150      0.9588707  0.9479567
-## 
+##
 ## Tuning parameter 'shrinkage' was held constant at a value of 0.1
 ## Tuning parameter 'n.minobsinnode' was
 ##  held constant at a value of 10
@@ -416,7 +407,7 @@ cmGBM
 
 ```
 ## Confusion Matrix and Statistics
-## 
+##
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1155   20    0    0    1
@@ -424,7 +415,7 @@ cmGBM
 ##          C    1   12  713   16    3
 ##          D    0    1    6  647    8
 ##          E    0    0    2    4  743
-## 
+##
 ## Overall Statistics
 ##                                           
 ##                Accuracy : 0.9731          
@@ -435,9 +426,9 @@ cmGBM
 ##                   Kappa : 0.966           
 ##                                           
 ##  Mcnemar's Test P-Value : NA              
-## 
+##
 ## Statistics by Class:
-## 
+##
 ##                      Class: A Class: B Class: C Class: D Class: E
 ## Sensitivity            0.9914   0.9581   0.9661   0.9628   0.9763
 ## Specificity            0.9929   0.9889   0.9905   0.9957   0.9982
