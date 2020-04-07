@@ -158,7 +158,7 @@ corrplot(cor_mat, order = "FPC", method = "color", type = "upper",
          tl.cex = 0.8, tl.col = rgb(0, 0, 0))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-5-1.jpg)<!-- -->
+![](./images/unnamed-chunk-5-1-1.png)<!-- -->
 
 In the above graph the correlated predictors (variables) are those with a dark color intersection.
 
@@ -201,7 +201,7 @@ fancyRpartPlot(decisionTreeModel)
 ## Warning: labs do not fit even at cex 0.15, there may be some overplotting
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-7-1.jpg)<!-- -->
+![](./images/unnamed-chunk-7-1-1.png)<!-- -->
 
 ### Prediction
 validate the "decisionTreeModel" on testData to find accuracy
@@ -256,7 +256,7 @@ plot(cmtree$table, col = cmtree$byClass,
      main = paste("Decision Tree - Accuracy =", round(cmtree$overall['Accuracy'], 4)))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-9-1.jpg)<!-- -->
+![](images/unnamed-chunk-9-1-1.png)<!-- -->
 
 ## Random Forest
 
@@ -340,7 +340,7 @@ Accuracy Rate: *1* which is very high so out-of-sample-error is *0*. This might 
 plot(cmRandomForestModel$table, col = cmRandomForestModel$byClass, main = paste("Random Forest Confusion Matrix: Accuracy =", round(cmRandomForestModel$overall['Accuracy'], 4)))
 ```
 
-![](PracticalMachineLearning-CourseProject_files/figure-latex/unnamed-chunk-12-1.jpg)<!-- -->
+![](images/unnamed-chunk-12-1-1.png)<!-- -->
 
 ## Generalized Boosted Model
 
