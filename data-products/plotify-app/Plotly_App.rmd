@@ -1,0 +1,88 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Developing Data Products - Week 3 Assignment
+
+_Chandani Patel_
+
+_08/04/2020_
+
+# Introduction
+This project is created as part of the Developing Data Products course of the Coursera Data Science Specialisation.
+
+The goal of the project is to create a web page presentation using R Markdown that features a plot created with Plotly, and to host the resulting web page on either GitHub Pages, RPubs, or NeoCities.
+
+The interactive plot on the next slide represents 
+
+### Loading Libraries
+
+```{r}
+library(plotly)
+```
+
+### Load Data & Process Data
+This step will load the data from csv and it will process it to agreegate the data by state and dates
+
+```{r, echo=TRUE}
+# Load Data sets
+corona_data_us_counties <- read.csv("corona-data-us-counties.csv", header = TRUE)
+state_codes <- read.csv("us_codes.csv", header = TRUE)
+# Assign state code in main dataset from state_codes
+corona_data_us_counties$code<-state_codes[match(corona_data_us_counties$state, state_codes$state),1]
+
+# Agrregate data for day
+datewise_data = aggregate(cases~state+date, data=corona_data_us_counties, FUN=sum)
+deaths_flter_data = aggregate(deaths~state+date, data=corona_data_us_counties, FUN=sum)
+datewise_data['deaths']=deaths_flter_data['deaths']
+
+# Generate Data from states
+statewise_data = aggregate(cases~state+code, data=corona_data_us_counties, FUN=sum)
+deaths_satewise_data = aggregate(deaths~state, data=corona_data_us_counties, FUN=sum)
+statewise_data['deaths'] = deaths_satewise_data['deaths']
+
+```
+
+### Plot the graph to show timeseris data of COVID-19
+
+```{r, echo=TRUE}
+fig <- datewise_data %>% plot_ly()
+fig <- fig %>% add_trace(x = ~date, y = ~cases, type = 'bar', textposition = 'auto', name = 'Cases', 
+                         marker = list(color = 'rgb(158,202,225)'))
+fig <- fig %>% add_trace(x = ~date, y = ~deaths, type = 'bar', textposition = 'auto', name = 'Deaths',
+                         marker = list(color = 'rgb(228,87,81)'))
+fig <- fig %>% layout(title = list(text="US COVID-2019 Cases and Deaths Report", x=0),
+                      barmode = 'group', xaxis = list(title = "Date"),
+                      yaxis = list(title = "Cases V/S Deaths"))
+fig
+```
+
+### Plot the map graph to show state wise data of COVID-19
+```{r, echo=TRUE}
+statewise_data$hover <- with(statewise_data, paste(state, '<br>', "Cases", cases, "Deaths", deaths))
+# give state boundaries a white border
+l <- list(color = toRGB("red"), width = 2)
+# specify some map projection/options
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('red')
+)
+
+mapfig <- plot_geo(statewise_data, locationmode = 'USA-states')
+mapfig <- mapfig %>% add_trace(
+  z = ~cases, text = ~hover, locations = ~code,
+  color = ~cases, colors = 'Reds'
+)
+mapfig <- mapfig %>% colorbar(title = "Cases")
+mapfig <- mapfig %>% layout(
+  title = list(text='COVID-19 cases v/s deaths in US <br>(Hover for breakdown)', x = 0.2),
+  geo = g
+)
+mapfig
+```

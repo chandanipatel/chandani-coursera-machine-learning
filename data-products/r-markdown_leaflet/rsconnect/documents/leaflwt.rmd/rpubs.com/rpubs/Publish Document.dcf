@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/596388/7b49726d78184c0eb55132122fd3908c
+bundleId: https://api.rpubs.com/api/v1/document/596388/7b49726d78184c0eb55132122fd3908c
+url: http://rpubs.com/chandani_patel/596388
+when: 1586341741.22753

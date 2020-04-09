@@ -1,0 +1,12 @@
+name: courseara-data-products
+title: courseara-data-products
+username:
+account: chandani
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2086819
+bundleId: 2991557
+url: https://chandani.shinyapps.io/courseara-data-products/
+when: 1586428622.58765
+asMultiple: FALSE
+asStatic: FALSE
