@@ -1,0 +1,224 @@
+---
+title: "Data Science Capstone Project Week 2"
+author: "Chandani Patel"
+date: "April 25, 2020"
+output: html_document
+---
+  
+## Introduction
+Coursera Data Science: Statistics and Machine Learning Specialization intends to give the basic skills involved with being a data scientist. The goal of capstone project is to get the experience of being a data scientist.
+
+The project consists of developing a predictive model of text (Predictive Text Analytics) using a Swifkey Company Dataset.
+
+The main steps of this exercise contains downloading the dataset, understanding the dataset, cleaning the dataset and provide basic analysis.
+
+This document explains Data Analysis on SwiftKey dataset, explaining characteristics of the data, exploratory analysis and goals for the eventual app and algorithm.
+
+## Loading Libraries and initialize variables
+
+You can also embed plots, for example:
+  
+```{r echo=FALSE}
+options(mc.cores=4)
+options(java.parameters = "-Xmx60G")
+```
+
+```{r}
+library(NLP)
+library(tm)
+library(stringi)
+library(RWeka)
+library(ggplot2)
+library(ngram)
+library(wordcloud2)
+library(RColorBrewer)
+library(slam)
+library(xtable)
+
+library(here)
+library(rio)
+library(webshot)
+library(htmlwidgets)
+```
+
+_Note: I have used images for wordcount graph for bigram and trigram as wordcount has limitation that it can not draw 2 wordcount in 1 R markdown_
+
+### Dataset
+
+The Swifkey Dataset can be downloaded and unzipped manually from the below link:
+  
+  https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+
+Dataset contains diffrent folders for de_DE (German), en_US (English, US), fi_FI (Finnish) or ru_RU (Russian).
+each folder has 3 files for twitter, blogs and news details.
+
+#### Sampling of Data
+I have used 3 file types from US set: blogs, news, twitter. A Corpus (collection of documents) is also created based on the 3 samples.
+
+```{r}
+datasource_folder <- "final/en_US"
+
+blogs_path <- "final/en_US/en_US.blogs.txt"
+news_path <- "final/en_US/en_US.news.txt"
+twitter_path <- "final/en_US/en_US.twitter.txt"
+
+# Read blogs data in binary mode
+conn <- file(blogs_path, open="rb"); blogs <- readLines(conn, encoding="UTF-8"); close(conn)
+# Read news data in binary mode
+conn <- file(news_path, open="rb"); news <- readLines(conn, encoding="UTF-8"); close(conn)
+# Read twitter data in binary mode
+conn <- file(twitter_path, open="rb"); twitter <- readLines(conn, encoding="UTF-8"); close(conn)
+# Remove temporary variable
+rm(conn)
+
+# Compute statistics and summary info for each data type
+stats_for_raw <- data.frame(
+  FileName=c("en_US.blogs","en_US.news","en_US.twitter"),
+  FileSizeinMB=c(file.info(blogs_path)$size/1024^2,
+                 file.info(news_path)$size/1024^2,
+                 file.info(twitter_path)$size/1024^2),
+  t(rbind(sapply(list(blogs,news,twitter),stri_stats_general),
+          WordCount=sapply(list(blogs,news,twitter),stri_stats_latex)[4,]))
+)
+
+stats_for_raw
+
+set.seed(2008)
+list_blogs <- blogs[sample(1:length(blogs), 12000, replace=FALSE)]
+list_News <- news[sample(1:length(news), 12000, replace=FALSE)]
+list_twitter <- twitter[sample(1:length(twitter), 12000, replace=FALSE)]
+
+corpus <- VCorpus(DirSource(datasource_folder, encoding = 'UTF-8'))
+```
+
+## Exploration and Data Cleaning
+This secion will use text mining library tm for cleaning text which can be meaning full in Predictive Text Abalytics.
+
+#### Steps for cleaning Data
+##### Convert the documents in lowercase
+Converting the text in lowercase format is beneficial as it would avoid comparisons between lowercase, uppercase or a mix of both of them
+```{r}
+corpus_lowercase <- tm_map(corpus, content_transformer(tolower))
+```
+
+##### Remove the punctuation marks
+Removing punctuation marks is good to note that this can generate some issues like apostrophes one, which in English are commonly used.
+```{r}
+corpus_low_punct <- tm_map(corpus_lowercase, removePunctuation)
+```
+
+##### Removing numbers
+Predicting a number is quite a challenging task so I decided to remove those from the data
+```{r}
+corpus_low_punct_no <- tm_map(corpus_low_punct, removeNumbers)
+```
+
+##### Removing stopwords (eg. or, and, in, not, is, are etc)
+Stopwords are words that appear so often in the text that they are not very useful for a prediction algorimth as they don’t add too much value. A good exercise before removing this type of words would be to check how common they are in the text and decide after if they are considered stopwords or not.
+TM package includes a collection of stopwords for several different languages. I have used english stopwords to remove few words.
+
+```{r}
+corpus_low_punct_no_stop <- tm_map(corpus_low_punct_no, removeWords,stopwords("english"))
+```
+#####  Removing extra whitespaces
+
+```{r}
+corpus_low_punct_no_stop_white <- tm_map(corpus_low_punct_no_stop, stripWhitespace)
+```
+
+## Analysis of the cleaned data
+Data is cleaned and ready analysed, we will see few analysis to search answer of following questions:
+  
+  - Some words are more frequent - What are distributions of word frequencies?
+  - What are frequencies of 2-grams and 3-grams in the dataset?
+  
+### Unigram (1-Gram) analysis
+#### Generate corpus for Unigram
+```{r}
+# 
+gram1 = as.data.frame((as.matrix(  TermDocumentMatrix(corpus_low_punct_no_stop_white) )) ) 
+gram1v <- sort(rowSums(gram1),decreasing=TRUE)
+gram1d <- data.frame(word = names(gram1v),freq=gram1v)
+gram1d[1:10,]
+```
+
+#### Histogram of the 30 Top Unigrams
+
+```{r}
+ggplot(gram1d[1:30,], aes(x=reorder(word, freq),y=freq)) + 
+  geom_bar(stat="identity", width=0.5, fill="tomato2") + 
+  labs(title="Unigrams")+
+  xlab("Unigrams") + ylab("Frequency") + 
+  theme(axis.text.x=element_text(angle=65, vjust=0.6))
+
+```
+
+#### WordCloud of the 100 Top Unigrams
+
+```{r}
+wordcloud2(gram1d[1:100,], shape = 'diamond', color = "random-light", backgroundColor = "#F3F3F3")
+```
+
+```{r, echo=FALSE}
+rm(gram1)
+rm(gram1v)
+rm(gram1d)
+gc()
+```
+
+### Bigram (2-Gram) analysis
+
+#### Generating corpus
+
+```{r}
+bigram <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+gram2= as.data.frame((as.matrix(  TermDocumentMatrix(corpus_low_punct_no_stop_white,control = list(tokenize = bigram)) )) ) 
+gram2v <- sort(rowSums(gram2),decreasing=TRUE)
+gram2d  <- data.frame(word = names(gram2v),freq=gram2v)
+gram2d[1:10,]
+```
+
+#### Wordcount of Biagram
+
+```{r}
+bigramwc <- wordcloud2(gram2d[1:100,], shape = 'diamond', color = "random-light", backgroundColor = "#F3F3F3")
+saveWidget(bigramwc, 'bigramwc.html', selfcontained = F)
+webshot('bigramwc.html', 'bigramwc.png', vwidth=700,vheight=500, delay = 5)
+```
+
+![wordcloud](bigramwc.png) { width = 100%}
+
+### Trigram (3-Gram) analysis
+#### Generating corpus
+
+```{r}
+trigram <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+gram3 = as.data.frame((as.matrix(  TermDocumentMatrix(corpus_low_punct_no_stop_white,control = list(tokenize = trigram)) )) ) 
+gram3v <- sort(rowSums(gram3),decreasing=TRUE)
+gram3d <- data.frame(word = names(gram3v),freq=gram3v)
+gram3d[1:10,]
+```
+
+#### Wordcount of Trigram
+
+```{r}
+trigramwc <- wordcloud2(gram3d[1:100,], shape = 'diamond', color = "random-light", backgroundColor = "#F3F3F3")
+saveWidget(trigramwc, 'trigramwc.html', selfcontained = F)
+webshot('trigramwc.html', 'trigramwc.png', vwidth=700,vheight=500, delay = 5)
+```
+
+![wordcloud](trigramwc.html) { width = 100%}
+
+
+## Findings in Dataset
+While loading the data, “news” dataset has an incomplete final line; “twitter” dataset contains some null lines. As per error processing info displayed.
+
+There are still some accents that weren’t removed in the cleaning step; it would be cleaner for the algorithm to remove those in a second cleaning round.
+
+## Feedback on plans for creating a prediction algorithm and Shiny app
+
+ - For this analysis, I used only 1000 lines of text, for each dataset. I will use a wider sample for the prediction algorithm (80% modelling/ 20% testing)
+  - With a more representative and better-cleaned sample data, the algorithm can be implemented and refined (code optimization) with testing along
+  - Develop prediction algorithm by comparing the input to the 2-gram and 3-gram matrix.
+  - Optimize the model for fast processing.
+  - Implement the Shiny application using shinydashboard with textbox as input and wilk show output of prediction algorithm
