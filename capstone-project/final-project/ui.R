@@ -7,18 +7,23 @@ ui <- dashboardPage(
     dashboardBody(
         # Boxes need to be put in a row (or column)
         fluidRow(
-            column(width = 4,
+            column(width = 2),
+            column(width = 8,
                 box(
                     title = "Search the text", solidHeader = TRUE, status = "info", width = 12,
                     textInput("inputText", "Enter your Word/Sentence:")
                 )
-            ),
+            )),
+        fluidRow(
+            column(width = 2),
             column(width = 8,
                 box(
                     title = "Output", solidHeader = TRUE, status = "success", width = 12,
-                    
-                    tags$h3(textOutput("predictedText")),
-                    strong(textOutput("enteredText"))
+                    h4("Predicted Word:"),
+                    tags$h5(textOutput("predictedText")),
+                    hr(),
+                    h4("Your text:"),
+                    tags$h5(textOutput("enteredText"))
                 )
             )
         )

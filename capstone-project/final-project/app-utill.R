@@ -29,7 +29,6 @@ cleanInput <- function(text){
   return(textInput)
 }
 
-
 nextWordPrediction <- function(wordCount,textInput){
   
   if (wordCount>=3) {
@@ -44,7 +43,6 @@ nextWordPrediction <- function(wordCount,textInput){
     textInput <- c(NA,NA,textInput)
   }
   
-  
   ### 1 ###
   wordPrediction <- as.character(final4Data[final4Data$unigram==textInput[1] & 
                                               final4Data$bigram==textInput[2] & 
@@ -58,8 +56,5 @@ nextWordPrediction <- function(wordCount,textInput){
       wordPrediction <- as.character(final2Data[final2Data$unigram==textInput[3],][1,]$bigram)
     }
   }
-  
-  
   print(wordPrediction)
-  
 }
