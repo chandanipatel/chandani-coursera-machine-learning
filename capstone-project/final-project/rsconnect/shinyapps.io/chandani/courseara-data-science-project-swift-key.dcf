@@ -1,0 +1,13 @@
+name: courseara-data-science-project-swift-key
+title: courseara-data-science-project-swift-key
+username:
+account: chandani
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2211141
+bundleId: 3082390
+url: https://chandani.shinyapps.io/courseara-data-science-project-swift-key/
+when: 1588180814.8291
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData

@@ -1,0 +1,104 @@
+# Preload necessary R librabires
+
+options(mc.cores=20)
+options(java.parameters = "-Xmx40G")
+library(NLP)
+library(tm)
+library(stringi)
+library(RWeka)
+library(ngram)
+library(wordcloud2)
+library(RColorBrewer)
+library(slam)
+library(xtable)
+
+library(here)
+library(rio)
+library(webshot)
+library(htmlwidgets)
+
+datasource_folder <- "data/en_US"
+
+blogs_path <- "data/en_US/en_US.blogs.txt"
+news_path <- "data/en_US/en_US.news.txt"
+twitter_path <- "data/en_US/en_US.twitter.txt"
+
+# Read blogs data in binary mode
+conn <- file(blogs_path, open="rb"); blogs <- readLines(conn, encoding="UTF-8"); close(conn)
+# Read news data in binary mode
+conn <- file(news_path, open="rb"); news <- readLines(conn, encoding="UTF-8"); close(conn)
+# Read twitter data in binary mode
+conn <- file(twitter_path, open="rb"); twitter <- readLines(conn, encoding="UTF-8"); close(conn)
+# Remove temporary variable
+rm(conn)
+
+# Compute statistics and summary info for each data type
+stats_for_raw <- data.frame(
+  FileName=c("en_US.blogs","en_US.news","en_US.twitter"),
+  FileSizeinMB=c(file.info(blogs_path)$size/1024^2,
+                 file.info(news_path)$size/1024^2,
+                 file.info(twitter_path)$size/1024^2),
+  t(rbind(sapply(list(blogs,news,twitter),stri_stats_general),
+          WordCount=sapply(list(blogs,news,twitter),stri_stats_latex)[4,]))
+)
+
+stats_for_raw
+
+set.seed(2008)
+list_blogs <- blogs[sample(1:length(blogs), 12000, replace=FALSE)]
+list_News <- news[sample(1:length(news), 12000, replace=FALSE)]
+list_twitter <- twitter[sample(1:length(twitter), 12000, replace=FALSE)]
+
+corpus <- VCorpus(DirSource(datasource_folder, encoding = 'UTF-8'))
+
+corpus_lowercase <- tm_map(corpus, content_transformer(tolower))
+corpus_low_punct <- tm_map(corpus_lowercase, removePunctuation)
+corpus_low_punct_no <- tm_map(corpus_low_punct, removeNumbers)
+removeURL <- function(x) gsub("http[[:alnum:]]*", "", x) 
+corpus_removed_url <- tm_map(corpus_low_punct_no, content_transformer(removeURL))
+corpus_low_punct_no_stop <- tm_map(corpus_removed_url, removeWords,stopwords("english"))
+corpus_low_punct_no_stop_white <- tm_map(corpus_low_punct_no_stop, stripWhitespace)
+
+saveRDS(corpus_low_punct_no_stop_white, file = "./final_corpus.RData")
+
+rm(clean_sample)
+
+# Build the n-grams
+final_corpus <- readRDS("./final_corpus.RData")
+final_corpus_DF <-data.frame(text=unlist(sapply(final_corpus,`[`, "content")), 
+                             stringsAsFactors = FALSE)
+
+# Build the tokenization function for the n-grams
+ngramTokenizer <- function(the_corpus, ngramCount) {
+  ngramFunction <- NGramTokenizer(the_corpus, 
+                                  Weka_control(min = ngramCount, max = ngramCount, 
+                                               delimiters = " \\r\\n\\t.,;:\"()?!"))
+  ngramFunction <- data.frame(table(ngramFunction))
+  ngramFunction <- ngramFunction[order(ngramFunction$Freq, 
+                                       decreasing = TRUE),]
+  colnames(ngramFunction) <- c("String","Count")
+  ngramFunction
+}
+
+#gc(verbose = getOption("verbose"), reset=FALSE)  ????
+
+unigram <- ngramTokenizer(final_corpus_DF, 1)
+saveRDS(unigram, file = "./unigram.RData")
+
+bigram <- ngramTokenizer(final_corpus_DF, 2)
+bigram <- bigram[bigram$Count>1,]
+bigram <- bigram %>% separate(String, c("unigram","bigram"), " ", remove=TRUE)
+names(bigram)[3] <- "frequency"
+saveRDS(bigram, file = "./bigram.RData")
+
+trigram <- ngramTokenizer(final_corpus_DF, 3)
+trigram <- trigram[trigram$Count>1,]
+trigram <- trigram %>% separate(String, c("unigram","bigram","trigram"), " ", remove=TRUE)
+names(trigram)[4] <- "frequency"
+saveRDS(trigram, file = "./trigram.RData")
+
+quadgram <- ngramTokenizer(final_corpus_DF, 4)
+quadgram <- quadgram[quadgram$Count>1,]
+quadgram <- quadgram %>% separate(String, c("unigram","bigram","trigram","quadgram"), " ", remove=TRUE)
+names(quadgram)[5] <- "frequency"
+saveRDS(quadgram, file = "./quadgram.RData")

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588090081416.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5C87A3B9",
+    "lastKnownWriteTime" : 1588088782,
+    "last_content_update" : 1588088782,
+    "path" : "~/capstone-project/final-project/final-ngram.R",
+    "project_path" : "final-ngram.R",
+    "properties" : {
+        "cursorPosition" : "107,44",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
